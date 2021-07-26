@@ -75,6 +75,7 @@ class VaccTVC: UITableViewController {
                 let mypet_data_center:UserDefaults
                 mypet_data_center = UserDefaults.init()
                 self.userID = mypet_data_center.integer(forKey: "userID") - 1
+                print("預防針頁面的\(self.userID)")
                 self.root = Database.database().reference()
                 let addPet = self.root.child("mypet").child("\(self.userID)")
                 print(addPet)
@@ -131,6 +132,7 @@ class VaccTVC: UITableViewController {
                     print("下載出錯\(err)")
                     cell.imgPicture.image = UIImage(named: "DefaultPhoto")
                 }else{
+                    print("以下載寵物照片")
                     let petPic = UIImage(data: bytes!)
                     cell.imgPicture.image = petPic
                     

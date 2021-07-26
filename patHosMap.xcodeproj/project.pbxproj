@@ -3,15 +3,12 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		3D06F3E724C1BAB0001F5C3E /* HospitalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D06F3E624C1BAB0001F5C3E /* HospitalViewController.swift */; };
-		3D1AA83D26A6A9C700E3B072 /* GoogleMobileAds.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D1AA83C26A6A9C700E3B072 /* GoogleMobileAds.xcframework */; };
 		3D4E1D1524E4CBEE009CA582 /* MyCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D4E1D1424E4CBEE009CA582 /* MyCell.swift */; };
-		3DB08F0026A6A83100781E5C /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3DB08EFF26A6A83100781E5C /* GoogleService-Info.plist */; };
-		3DB08F0226A6A84100781E5C /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3DB08F0126A6A84100781E5C /* GoogleService-Info.plist */; };
 		3DBBB7EE24C03F04003F5F9F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DBBB7ED24C03F04003F5F9F /* AppDelegate.swift */; };
 		3DBBB7F024C03F04003F5F9F /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DBBB7EF24C03F04003F5F9F /* SceneDelegate.swift */; };
 		3DBBB7F524C03F04003F5F9F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3DBBB7F324C03F04003F5F9F /* Main.storyboard */; };
@@ -20,6 +17,7 @@
 		3DF35BCE24C535DB00087826 /* HosDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DF35BCD24C535DB00087826 /* HosDetailViewController.swift */; };
 		3DF35BD824C5A4F500087826 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DF35BD724C5A4F500087826 /* LoginViewController.swift */; };
 		3DF35BDA24C5A51C00087826 /* RegisterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DF35BD924C5A51C00087826 /* RegisterViewController.swift */; };
+		3DF838D826A901F300C57680 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3DF838D726A901F300C57680 /* GoogleService-Info.plist */; };
 		3DFF6C2E24CD60B50015D9AB /* Favorite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DFF6C2D24CD60B50015D9AB /* Favorite.swift */; };
 		85505153D2AD3BD0FFA824B9 /* Pods_patHosMap.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 11B90A8FD0A5DB3E22247E4C /* Pods_patHosMap.framework */; };
 		9537CE8D24C56DC300714D63 /* AddAnimal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9537CE8C24C56DC300714D63 /* AddAnimal.swift */; };
@@ -32,10 +30,7 @@
 		11B90A8FD0A5DB3E22247E4C /* Pods_patHosMap.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_patHosMap.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3D06F3E624C1BAB0001F5C3E /* HospitalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HospitalViewController.swift; sourceTree = "<group>"; };
 		3D0CF71424D24DE600051A39 /* mylocation.gpx */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = mylocation.gpx; sourceTree = "<group>"; };
-		3D1AA83C26A6A9C700E3B072 /* GoogleMobileAds.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = GoogleMobileAds.xcframework; path = "../GoogleMobileAdsSdkiOS-8.7.0/GoogleMobileAds.xcframework"; sourceTree = "<group>"; };
 		3D4E1D1424E4CBEE009CA582 /* MyCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyCell.swift; sourceTree = "<group>"; };
-		3DB08EFF26A6A83100781E5C /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../GoogleService-Info.plist"; sourceTree = "<group>"; };
-		3DB08F0126A6A84100781E5C /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../GoogleService-Info.plist"; sourceTree = "<group>"; };
 		3DBBB7EA24C03F04003F5F9F /* patHosMap.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = patHosMap.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3DBBB7ED24C03F04003F5F9F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		3DBBB7EF24C03F04003F5F9F /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -46,6 +41,7 @@
 		3DF35BCD24C535DB00087826 /* HosDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HosDetailViewController.swift; sourceTree = "<group>"; };
 		3DF35BD724C5A4F500087826 /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		3DF35BD924C5A51C00087826 /* RegisterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterViewController.swift; sourceTree = "<group>"; };
+		3DF838D726A901F300C57680 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../../Downloads/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		3DFF6C2D24CD60B50015D9AB /* Favorite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Favorite.swift; sourceTree = "<group>"; };
 		548A8636DCED64BA45F4C677 /* Pods-patHosMap.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-patHosMap.release.xcconfig"; path = "Target Support Files/Pods-patHosMap/Pods-patHosMap.release.xcconfig"; sourceTree = "<group>"; };
 		9537CE8C24C56DC300714D63 /* AddAnimal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddAnimal.swift; sourceTree = "<group>"; };
@@ -61,7 +57,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				85505153D2AD3BD0FFA824B9 /* Pods_patHosMap.framework in Frameworks */,
-				3D1AA83D26A6A9C700E3B072 /* GoogleMobileAds.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -104,7 +99,6 @@
 				3DF35BD924C5A51C00087826 /* RegisterViewController.swift */,
 				3D06F3E624C1BAB0001F5C3E /* HospitalViewController.swift */,
 				3DF35BCD24C535DB00087826 /* HosDetailViewController.swift */,
-				3DB08EFF26A6A83100781E5C /* GoogleService-Info.plist */,
 				3DFF6C2D24CD60B50015D9AB /* Favorite.swift */,
 				95EE96F324CEB3CD009AD50E /* VaccTVC.swift */,
 				3D4E1D1424E4CBEE009CA582 /* MyCell.swift */,
@@ -116,7 +110,7 @@
 				3DBBB7F824C03F05003F5F9F /* LaunchScreen.storyboard */,
 				3DBBB7FB24C03F05003F5F9F /* Info.plist */,
 				3D0CF71424D24DE600051A39 /* mylocation.gpx */,
-				3DB08F0126A6A84100781E5C /* GoogleService-Info.plist */,
+				3DF838D726A901F300C57680 /* GoogleService-Info.plist */,
 			);
 			path = patHosMap;
 			sourceTree = "<group>";
@@ -124,7 +118,6 @@
 		F6C35B2633DDBE4FE8AA215D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				3D1AA83C26A6A9C700E3B072 /* GoogleMobileAds.xcframework */,
 				11B90A8FD0A5DB3E22247E4C /* Pods_patHosMap.framework */,
 			);
 			name = Frameworks;
@@ -192,8 +185,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3DBBB7FA24C03F05003F5F9F /* LaunchScreen.storyboard in Resources */,
-				3DB08F0026A6A83100781E5C /* GoogleService-Info.plist in Resources */,
-				3DB08F0226A6A84100781E5C /* GoogleService-Info.plist in Resources */,
+				3DF838D826A901F300C57680 /* GoogleService-Info.plist in Resources */,
 				3DBBB7F724C03F05003F5F9F /* Assets.xcassets in Resources */,
 				3DBBB7F524C03F04003F5F9F /* Main.storyboard in Resources */,
 			);
@@ -428,10 +420,11 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = animal109.com.tw.patHosMap;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -447,10 +440,11 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = animal109.com.tw.patHosMap;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};

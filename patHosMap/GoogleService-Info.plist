@@ -3,21 +3,21 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>583951637759-nms3vpr383ki91c7cgi6veal5slj8g37.apps.googleusercontent.com</string>
+	<string>624376908088-jjq56scml7708lqg087a9tc702lhpoeu.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.583951637759-nms3vpr383ki91c7cgi6veal5slj8g37</string>
+	<string>com.googleusercontent.apps.624376908088-jjq56scml7708lqg087a9tc702lhpoeu</string>
 	<key>API_KEY</key>
-	<string>AIzaSyCrhbO2fC8uoKXGBp9XuI_slwb70jEFKtY</string>
+	<string>AIzaSyD6yo-2qc3u8wPjjR_NHevqr2wOAYQFI04</string>
 	<key>GCM_SENDER_ID</key>
-	<string>583951637759</string>
+	<string>624376908088</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>animal109.conm.tw.patHosMap</string>
 	<key>PROJECT_ID</key>
-	<string>animal109</string>
+	<string>artful-tractor-285603</string>
 	<key>STORAGE_BUCKET</key>
-	<string>animal109.appspot.com</string>
+	<string>artful-tractor-285603.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -29,8 +29,8 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:583951637759:ios:c9359e9e2113e865a700ca</string>
+	<string>1:624376908088:ios:82241c59c3eaf8046659cd</string>
 	<key>DATABASE_URL</key>
-	<string>https://animal109.firebaseio.com</string>
+	<string>https://artful-tractor-285603-default-rtdb.firebaseio.com</string>
 </dict>
 </plist>

@@ -15,10 +15,10 @@ class RegisterViewController: UIViewController {
         let user = root.child("user")
         let account1 = self.account.text
         user.observeSingleEvent(of: .value) { (data) in
-            let manager_array = data.value! as! [String:[String:String]]
+            let manager_array = data.value! as! [[String:String]]
             for manager in manager_array{
                 count += 1
-                if manager.value["account"] == account1{
+                if manager["account"] == account1{
                     is_manager = true
                     let alert = UIAlertController(title: "警告", message: "帳號已存在", preferredStyle: .alert)
                     let button = UIAlertAction(title: "OK", style: UIAlertAction.Style.default) { (button) in
@@ -32,10 +32,10 @@ class RegisterViewController: UIViewController {
             if !is_manager{
                 if self.account.text != "" && self.password.text != ""{
                     print("推送\(count),創建帳號")
-                    let newUser = self.root.child("user").child("user\(count+1)")
+                    let newUser = self.root.child("user").child("\(count)")
                     let newData = ["account":"\(self.account.text!)","password":"\(self.password.text!)","favorite":""]
                     
-                    let newpet = self.root.child("mypet").child("user\(count+1)")
+                    let newpet = self.root.child("mypet").child("\(count+1)")
                     let petdefault=[["birthday":"","kind":"","name":""]]
                     newpet.setValue(petdefault)
                     newUser.setValue(newData)

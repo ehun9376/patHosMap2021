@@ -54,15 +54,16 @@ class AddAnimal: UIViewController,UIImagePickerControllerDelegate,UINavigationCo
         let little_data_center:UserDefaults
         little_data_center = UserDefaults.init()
         let userID = little_data_center.integer(forKey: "userID") - 1
-        print(userID)
+        print("增加寵物的使用者\(userID)")
         let petcount = "\(petCount!)"
-        print("寵物數量\(petcount)")
+        print("此使用者的第幾隻寵物\(petcount)")
         let dataAddanimal = root.child("mypet").child("\(userID)").child("\(petcount)")
         let newData = ["name":"\(self.txtName.text!)","birthday":"\(self.txtBirthday.text!)","kind":"\(self.kind)","picture":"user\(self.userID!)pet\(self.petCount!).jpeg",]
         dataAddanimal.setValue(newData)
         //處理上傳
-        let picRef = storage.reference().child("data/picture/user\(self.userID!)pet\(self.petCount!).jpeg")
+        let picRef =  storage.reference().child("data/picture/user\(self.userID!)pet\(self.petCount!).jpeg")
         let jData = self.imgPicture.image!.jpegData(compressionQuality: 0.5)
+        print("圖片資訊\(jData?.description ?? "沒有圖片資訊")")
         picRef.putData(jData!)
         //訊息視窗
         let alert = UIAlertController(title: "通知", message: "已新增寵物", preferredStyle: .alert)
@@ -99,11 +100,9 @@ class AddAnimal: UIViewController,UIImagePickerControllerDelegate,UINavigationCo
            self.show(imagePicker, sender: nil)
     }
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        print("影像資訊:\(info)")
         if let image = info[.originalImage] as? UIImage{
             //將拍照結果顯示在拍照位置
             imgPicture.image = image
-            
             //由picker退掉相機畫面
             picker.dismiss(animated: true, completion: nil)
         }
@@ -160,12 +159,12 @@ class AddAnimal: UIViewController,UIImagePickerControllerDelegate,UINavigationCo
     }
     @objc func keyboardWillShow(_ sender:Notification){
         print("鍵盤彈出")
-        print("通知資訊\(sender.userInfo!)")
+//        print("通知資訊\(sender.userInfo!)")
         if let keyBoardHeight = (sender.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue.size.height{
-            print("鍵盤高度\(keyBoardHeight)")
+//            print("鍵盤高度\(keyBoardHeight)")
             //計算扣除鍵盤後的可視高度
             let visibleHeight = self.view.bounds.size.height - keyBoardHeight
-            print("可視高度\(visibleHeight)")
+//            print("可視高度\(visibleHeight)")
             //如果『Ｙ軸底緣位置』比『可視高度』還高，表示元件被鍵盤遮住
             if currentObjectBottomYPosition > visibleHeight{
                 //移動『Ｙ軸底緣位置』與『可視高度之間的差值』（即被遮住的範圍高度，再少10點）

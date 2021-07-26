@@ -18,20 +18,20 @@ class LoginViewController: UIViewController, CLLocationManagerDelegate {
     var root:DatabaseReference!
     var observer:UInt = 0
     var count = 0
-    var manager_array:[String:[String:String]] = [:]
+    var manager_array:[[String:String]] = []
     @IBAction func login(_ sender: UIButton) {
         busy.isHidden = false
         let user = root.child("user")
         var is_manager = false
         user.observeSingleEvent(of: .value) { (data) in
             print(data.value!)
-            self.manager_array = (data.value! as? [String:[String:String]])!
+            self.manager_array = (data.value! as? [[String:String]])!
             print(self.manager_array)
             for manager in self.manager_array{
                 self.count += 1
-                print(manager.value)
-                print("登入頁面\(self.count)")
-                if manager.value["account"] == self.account.text && manager.value["password"] == self.password.text{
+                print(manager)
+                print("登入頁面\(self.count)的資料")
+                if manager["account"] == self.account.text && manager["password"] == self.password.text{
                     is_manager = true
                     break
                 }

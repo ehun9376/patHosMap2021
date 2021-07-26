@@ -56,8 +56,8 @@ class Favorite: UITableViewController, UIActionSheetDelegate {
                 self.userID = little_data_center.integer(forKey: "userID") - 1
                 print("最愛頁的\(self.userID)")
                 self.root = Database.database().reference()
-                self.datafavorite =  self.root.child("user").child("user\(self.userID)").child("favorite")
-                self.self.root.child("user").child("user\(self.userID)").observeSingleEvent(of: .value) { (shot) in
+                self.datafavorite =  self.root.child("user").child("\(self.userID)").child("favorite")
+                self.root.child("user").child("\(self.userID)").observeSingleEvent(of: .value) { (shot) in
                     print("最愛頁的\(shot.value!)")
                     let shotValue = shot.value as? [String:String] ?? [:]
                     let data = shotValue["favorite"] ?? ""

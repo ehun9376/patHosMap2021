@@ -36,14 +36,11 @@ class HosDetailViewController: UIViewController, MKMapViewDelegate, CLLocationMa
     //MARK: - target action
     @IBAction func btnAddToFavorite(_ sender: UIButton) {
         self.userID = little_data_center.integer(forKey: "userID") - 1
-        self.datafavorite =  root.child("user").child("user\(self.userID!)").child("favorite")
+        self.datafavorite =  root.child("user").child("\(self.userID!)").child("favorite")
+        print(count)
         if self.userFavoriteName != ""{
             if self.userFavoriteName.components(separatedBy: ",").contains(strname) || count == 1{
-//                let alert = UIAlertController(title: "警告", message: "已在最愛", preferredStyle: .alert)
-//                let button = UIAlertAction(title: "OK", style: UIAlertAction.Style.default) { (button) in }
-//                alert.addAction(button)
-//                self.present(alert, animated: true, completion: {})
-                print(self.userFavoriteName!)
+                print("現有的最愛列\(self.userFavoriteName!)")
                 let tempdata = self.userFavoriteName.components(separatedBy: ",").filter { (word) -> Bool in
                     return word != self.strname
                 }
@@ -58,7 +55,6 @@ class HosDetailViewController: UIViewController, MKMapViewDelegate, CLLocationMa
             else{
                 self.datafavorite.setValue(self.userFavoriteName + "," + strname)
                 count = 1
-               
                 let alert = UIAlertController(title: "通知", message: "已將\(strname)加入最愛", preferredStyle: .alert)
                 let button = UIAlertAction(title: "OK", style: UIAlertAction.Style.default) { (button) in }
                 alert.addAction(button)
@@ -70,6 +66,7 @@ class HosDetailViewController: UIViewController, MKMapViewDelegate, CLLocationMa
 
         }
         else{
+            print("加入最愛")
             self.datafavorite.setValue(strname)
             let alert = UIAlertController(title: "通知", message: "已將\(strname)加入最愛", preferredStyle: .alert)
             let button = UIAlertAction(title: "OK", style: UIAlertAction.Style.default){ (button) in}
@@ -141,7 +138,7 @@ class HosDetailViewController: UIViewController, MKMapViewDelegate, CLLocationMa
         
         //連結資料庫取得登入本APP的使用者的資訊
         root = Database.database().reference()
-        self.datafavorite =  root.child("user").child("user\(userID!)").child("favorite")
+        self.datafavorite =  root.child("user").child("\(userID!)").child("favorite")
         self.datafavorite.observe(.value) { (shot) in
             let data = (shot.value as? String ?? "")
             if data != ""{
