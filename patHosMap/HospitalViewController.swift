@@ -83,6 +83,7 @@ class HospitalViewController: UIViewController,UITableViewDataSource,UITableView
         if indexPath.row <= self.hosNameArray.count{
             cell.textLabel?.text = hosNameArray[indexPath.row]
             cell.textLabel?.adjustsFontSizeToFitWidth = true
+            cell.widthAnchor.constraint(equalToConstant: 711).isActive = true
             let geocoder = CLGeocoder()
             geocoder.geocodeAddressString(hosAddrArray[indexPath.row])
             {

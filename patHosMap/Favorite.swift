@@ -178,7 +178,7 @@ class Favorite: UITableViewController, UIActionSheetDelegate {
     // MARK: - Table view Delegate
     override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath){
         self.userFavoriteNameArray!.insert(self.userFavoriteNameArray!.remove(at: fromIndexPath.row), at: to.row)
-        self.datafavorite =  self.root.child("user").child("user\(self.userID)").child("favorite")
+        self.datafavorite =  self.root.child("user").child("\(self.userID)").child("favorite")
         self.datafavorite.setValue(self.userFavoriteNameArray!.joined(separator: ","))
     }
 
@@ -187,7 +187,7 @@ class Favorite: UITableViewController, UIActionSheetDelegate {
         self.userFavoriteNameArray!.remove(at: indexPath.row)
         print("刪除本地陣列")
         
-        self.datafavorite =  self.root.child("user").child("user\(self.userID)").child("favorite")
+        self.datafavorite =  self.root.child("user").child("\(self.userID)").child("favorite")
         self.datafavorite.setValue(self.userFavoriteNameArray!.joined(separator: ","))
         print("修改資料酷")
         
