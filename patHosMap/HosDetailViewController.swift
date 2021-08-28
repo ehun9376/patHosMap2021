@@ -1,16 +1,15 @@
 import UIKit
 import MapKit
 import CoreLocation
-import Firebase
 class HosDetailViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate {
     var strtel = ""
     var straddr = ""
     var strname = ""
-    var count = 0
-    var root:DatabaseReference!
-    var datafavorite:DatabaseReference!
-    var little_data_center = UserDefaults.init()
-    var userID:Int!
+    var userAccount:String?
+    var userFavoriteName:String?
+    var userFavoriteNameArray:[String]?
+    var isFavorite = false
+    let userDefault = UserDefaults()
     @IBOutlet weak var hosName: UILabel!
     //@IBOutlet weak var hosTelephone: UILabel!
     @IBOutlet weak var buttonPhone: UIButton!
@@ -18,8 +17,6 @@ class HosDetailViewController: UIViewController, MKMapViewDelegate, CLLocationMa
     @IBOutlet weak var buttonFavorite: UIButton!
     @IBOutlet weak var labelDistance: UILabel!
     @IBOutlet weak var background: UIImageView!
-    
-    
     //MARK: - Map相關
     @IBOutlet weak var mapView: MKMapView!
     let annomation = MKPointAnnotation()
@@ -32,46 +29,32 @@ class HosDetailViewController: UIViewController, MKMapViewDelegate, CLLocationMa
     var userlatitube:CLLocationDegrees!
     var userlongitube:CLLocationDegrees!
     var stringWithLink:String!
-    var userFavoriteName:String!
     //MARK: - target action
     @IBAction func btnAddToFavorite(_ sender: UIButton) {
-        self.userID = little_data_center.integer(forKey: "userID") - 1
-        self.datafavorite =  root.child("user").child("\(self.userID!)").child("favorite")
-        print(count)
-        if self.userFavoriteName != ""{
-            if self.userFavoriteName.components(separatedBy: ",").contains(strname) || count == 1{
-                print("現有的最愛列\(self.userFavoriteName!)")
-                let tempdata = self.userFavoriteName.components(separatedBy: ",").filter { (word) -> Bool in
-                    return word != self.strname
-                }
-                let newdata = tempdata.joined(separator: ",")
-                print("~~~~~~~~~~~\(newdata)")
-                self.datafavorite.setValue(newdata)
-                count = 0
-                DispatchQueue.main.async {
-                     sender.imageView?.image = UIImage(named: "favorite")
-                }
+        if isFavorite == true{
+            //如果已經是最愛，就取消最愛
+            isFavorite = false
+            DispatchQueue.main.async {
+                self.buttonFavorite.imageView?.image = UIImage(named: "favorite")
             }
-            else{
-                self.datafavorite.setValue(self.userFavoriteName + "," + strname)
-                count = 1
-                let alert = UIAlertController(title: "通知", message: "已將\(strname)加入最愛", preferredStyle: .alert)
-                let button = UIAlertAction(title: "OK", style: UIAlertAction.Style.default) { (button) in }
-                alert.addAction(button)
-                self.present(alert, animated: true, completion: {})
-                DispatchQueue.main.async {
-                     sender.imageView?.image = UIImage(named: "favorite2")
-                }
+            if self.userFavoriteNameArray?.contains(self.strname) == true{
+                self.userFavoriteNameArray = self.userFavoriteNameArray?.filter({ name in
+                    name != self.strname
+                })
             }
-
+            updateFavorite()
         }
         else{
-            print("加入最愛")
-            self.datafavorite.setValue(strname)
-            let alert = UIAlertController(title: "通知", message: "已將\(strname)加入最愛", preferredStyle: .alert)
-            let button = UIAlertAction(title: "OK", style: UIAlertAction.Style.default){ (button) in}
-            alert.addAction(button)
-            self.present(alert, animated: true, completion: {})
+            //如果不是最愛，就加入最愛
+            isFavorite = true
+            DispatchQueue.main.async {
+                self.buttonFavorite.imageView?.image = UIImage(named: "favorite2")
+            }
+            if self.userFavoriteNameArray?.contains(self.strname) == false{
+                self.userFavoriteNameArray?.append(self.strname)
+            }
+            updateFavorite()
+            
         }
     }
     @IBAction func buttonPhone(_ sender: UIButton)
@@ -122,7 +105,8 @@ class HosDetailViewController: UIViewController, MKMapViewDelegate, CLLocationMa
         self.buttonPhone.setTitle(strtel, for: .normal)
         self.hosAddress.text = straddr
         self.hosName.text = strname
-        
+        self.userAccount = self.userDefault.string(forKey: "account")
+        getFavorite()
         stringWithLink = "http://maps.apple.com/?daddr=\(hosAddress.text!)"
         getDestination()
         locationManager.delegate = self  //委派給ViewController
@@ -132,38 +116,7 @@ class HosDetailViewController: UIViewController, MKMapViewDelegate, CLLocationMa
         mapView.delegate = self  //委派給ViewController
         mapView.showsUserLocation = true   //顯示user位置
         mapView.userTrackingMode = .follow  //隨著user移動
-        
-        //使用userDefaults傳遞使用者ID
-        self.userID = little_data_center.integer(forKey: "userID") - 1
-        
         //連結資料庫取得登入本APP的使用者的資訊
-        root = Database.database().reference()
-        self.datafavorite =  root.child("user").child("\(userID!)").child("favorite")
-        self.datafavorite.observe(.value) { (shot) in
-            let data = (shot.value as? String ?? "")
-            if data != ""{
-                self.userFavoriteName = data
-                print(self.userFavoriteName!)
-                if self.userFavoriteName != nil{
-                    if self.userFavoriteName.components(separatedBy: ",").contains(self.strname)
-                {
-                    DispatchQueue.main.async {
-                        self.buttonFavorite.imageView?.image = UIImage(named: "favorite2")
-                    }
-                }
-                else
-                {
-                    DispatchQueue.main.async {
-                        self.buttonFavorite.imageView?.image = UIImage(named: "favorite")
-                    }
-                }
-            }
-        }
-            else{
-                self.userFavoriteName = data
-            }
-        }
-        
     }
     //MARK: - 地圖連結
     func getDestination()
@@ -207,7 +160,63 @@ class HosDetailViewController: UIViewController, MKMapViewDelegate, CLLocationMa
             }
         }
     }
-    
+    func getFavorite(){
+        print("使用者帳號\(self.userAccount!)")
+        let session:URLSession = URLSession(configuration: .default)
+        let task = session.dataTask(with: URL(string: String(format: "http://yi-huang.tw/getFavorite.php?account=%@",userAccount!))!){ [self]
+            (data,reponse,err)
+            in
+            if let error = err{
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "警告", message: "連線出現問題！\n\(error.localizedDescription)", preferredStyle: .alert)
+                    let button = UIAlertAction(title: "OK", style: UIAlertAction.Style.default) { (button) in }
+                    alert.addAction(button)
+                    self.present(alert, animated: true, completion: {})
+                }
+            }
+            else{
+                self.userFavoriteName = String(data: data!, encoding:.utf8)!
+                self.userFavoriteName = self.userFavoriteName?.filter({ Character in
+                    Character != " "
+                })
+                print("使用者最愛在這未處理\(self.userFavoriteName!)")
+                self.userFavoriteNameArray = self.userFavoriteName!.components(separatedBy: ",")
+                print("使用者最愛陣列\(self.userFavoriteNameArray!)")
+                print(self.strname)
+                if self.userFavoriteNameArray?.contains(self.strname) == true{
+                    DispatchQueue.main.async {
+                        print("按鈕圖片變動")
+                        self.isFavorite = true
+                        buttonFavorite.imageView?.image = UIImage(named: "favorite2")
+                    }
+                    
+                }
+                
+            }
+        }
+        task.resume()
+    }
+    func updateFavorite(){
+        print("使用者帳號\(self.userAccount!)")
+        let tempData:String? = self.userFavoriteNameArray?.joined(separator: ",")
+        let session:URLSession = URLSession(configuration: .default)
+        let task = session.dataTask(with: URL(string: String(format: "http://yi-huang.tw/updateFavorite.php?account=%@&favorite=%@",userAccount!,tempData!).addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)!){ [self]
+            (data,reponse,err)
+            in
+            if let error = err{
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "警告", message: "連線出現問題！\n\(error.localizedDescription)", preferredStyle: .alert)
+                    let button = UIAlertAction(title: "OK", style: UIAlertAction.Style.default) { (button) in }
+                    alert.addAction(button)
+                    self.present(alert, animated: true, completion: {})
+                }
+            }
+            else{
+                print("最愛已更動\(self.userFavoriteNameArray!)")
+            }
+        }
+        task.resume()
+    }
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let locValue: CLLocationCoordinate2D = manager.location?.coordinate else { return }
         print("locations = \(locValue.latitude) \(locValue.longitude)")

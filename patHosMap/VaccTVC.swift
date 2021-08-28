@@ -1,37 +1,31 @@
-//
-//  VaccTVC.swift
-//  patHosMap
-//
-//  Created by anna on 2020/7/27.
-//  Copyright © 2020 陳逸煌. All rights reserved.
-//
-
 import UIKit
-import Firebase
 class VaccTVC: UITableViewController {
-    var array:[[String:String]]!
-    var userID = 0
-    var signal = 0
-    var count = 0
-    var section = 0
-    var rows = 0
-    var root:DatabaseReference!
-    var picRef : StorageReference!
-    var storage = Storage.storage()
+    let userDefault = UserDefaults()
+    var userAccount:String?
+    var petDatas:[[String:String]]?
     //MARK: - 生命循環
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(true)
-        self.signal = 0
+        print("VACCTVCviewDidAppear")
+        userAccount = userDefault.string(forKey: "account")
+        getPet()
         self.tableView.reloadData()
+    }
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(true)
+        print("VACCTVCviewWillAppear")
     }
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.root = Database.database().reference()
         //抬頭及在左右兩側增加編輯與新增
+        print("VaccTVCDidLoad")
         self.navigationItem.title = "我的寵物"
         self.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "編輯", style: .plain, target: self, action: #selector(buttonEditAction))
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "新增", style: .plain, target: self, action: #selector(buttonAddAction))
         tableView.rowHeight = 110
+        userAccount = userDefault.string(forKey: "account")
+        getPet()
+        self.tableView.reloadData()
     }
     //MARK: - target action
     @objc func buttonEditAction()
@@ -53,91 +47,31 @@ class VaccTVC: UITableViewController {
         let addVC = self.storyboard!.instantiateViewController(identifier: "AddAnimal") as! AddAnimal
         addVC.VaccTVC = self
         self.show(addVC, sender: nil)
-        if array != nil{
-            addVC.petCount = array.count
-        }
-        else{
-            addVC.petCount = 0
-        }
-        
     }
+    
     // MARK: - Table view data source
-
     override func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
         return 1
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        print("資料載入中")
-        if self.signal != 1{
-            DispatchQueue.main.async {
-                let mypet_data_center:UserDefaults
-                mypet_data_center = UserDefaults.init()
-                self.userID = mypet_data_center.integer(forKey: "userID") - 1
-                print("預防針頁面的\(self.userID)")
-                self.root = Database.database().reference()
-                let addPet = self.root.child("mypet").child("\(self.userID)")
-                print(addPet)
-                addPet.observeSingleEvent(of: .value) { (shot) in
-                    if shot.value != nil{
-                        let data = shot.value as? [[String:String]] ?? []
-                        print("從網路下載的\(data)")
-                        if data != [["birthday": "", "name": "", "kind": ""]]{
-                            self.array = data
-                            print("下載後的陣列\(self.array!)")
-                            self.signal = 1
-                            self.rows = self.array.count
-                            self.tableView.reloadData()
-                        }
-                        else {
-                            let alert = UIAlertController(title: "警告", message: "請先新增寵物", preferredStyle: .alert)
-                            let button = UIAlertAction(title: "OK", style: UIAlertAction.Style.default) { (button) in
-                            }
-                            alert.addAction(button)
-                            self.present(alert, animated: true, completion: {})
-                        }
-
-                    }
-                    else{
-                        let alert = UIAlertController(title: "警告", message: "資料下載中", preferredStyle: .alert)
-                        let button = UIAlertAction(title: "Try Again", style: UIAlertAction.Style.default) { (button) in
-                        }
-                        alert.addAction(button)
-                        self.present(alert, animated: true, completion: {})
-                    }
-                    
-                }
-            }
+        //todo：取得rows長度
+        if petDatas == nil{
+            return 0
         }
         else{
-            self.rows = self.array.count
+            print("有幾個tablerows\(petDatas!.count)")
+            return petDatas!.count
         }
-
-        return self.rows
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = self.tableView.dequeueReusableCell(withIdentifier: "MyCell", for: indexPath) as! MyCell
-//        cell.textLabel?.text=self.array[indexPath.row]["name"]
-//        cell.imageView?.image = UIImage(named: "DefaultPhoto")
-        cell.lblName.text = self.array[indexPath.row]["name"]
+        cell.lblName.text = self.petDatas![indexPath.row]["petName"]
         cell.imgPicture.image = UIImage(named: "DefaultPhoto")
-        
-        self.storage = Storage.storage()
         DispatchQueue.main.async {
-            self.picRef = self.storage.reference().child("data/picture/user\(self.userID)pet\(indexPath.row).jpeg")
-            self.picRef.getData(maxSize: 100000000) { (bytes, error) in
-                if let err = error{
-                    print("下載出錯\(err)")
-                    cell.imgPicture.image = UIImage(named: "DefaultPhoto")
-                }else{
-                    print("以下載寵物照片")
-                    let petPic = UIImage(data: bytes!)
-                    cell.imgPicture.image = petPic
-                    
-                }
-            }
+            cell.imageView?.image = UIImage(contentsOfFile: "DefaultPhoto")
         }
         cell.accessoryType = .disclosureIndicator
         //表格背景顏色
@@ -147,54 +81,31 @@ class VaccTVC: UITableViewController {
         bgColorView.backgroundColor = UIColor(displayP3Red: 255/255, green: 230/255, blue: 109/255, alpha: 0.5)
         cell.selectedBackgroundView = bgColorView
         return cell
-        
     }
     //畫面轉入VaccSchedule
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-    count = indexPath.row
     let VaccS = self.storyboard?.instantiateViewController(identifier: "VaccSchedule") as! VaccSchedule
+        VaccS.petName = self.petDatas![indexPath.row]["petName"]
+        VaccS.petKind = self.petDatas![indexPath.row]["petKind"]
+        VaccS.vaccDate = stringConvertDate(string: self.petDatas![indexPath.row]["petBirth"]!)
         self.show(VaccS, sender: nil)
-        let d1 = array[indexPath.row]["birthday"]!
-        let str = stringConvertDate(string: d1)
-        print(str)
-        VaccS.vaccDate = str
-        VaccS.petName = array[indexPath.row]["name"]!
-        VaccS.petKind = array[indexPath.row]["kind"]!
+        
     }
-    
-    
     //左滑修改及刪除
     override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration?{
         //準備"修改"按鈕
         let actionMore = UIContextualAction(style: .normal, title: "修改") { (action, view, completionHanlder) in
             let DetailAnimalVC = self.storyboard?.instantiateViewController(identifier: "DetailAnimalViewController") as! DetailAnimalViewController
                 self.show(DetailAnimalVC, sender: nil)
-            DetailAnimalVC.petID = indexPath.row
+            DetailAnimalVC.petdata = self.petDatas![indexPath.row]
             print("修改按鈕被按下")
         }
         actionMore.backgroundColor = .blue
-        //準備"刪除"按鈕//todo尚未完全 
-        let actionDelete = UIContextualAction(style: .normal, title: "刪除") { (action, view, completionHanlder) in
-            print("刪除tableROW, 刪除的寵物名稱是\("\(self.userID)" + self.array[indexPath.row]["name"]!)")
-            UserDefaults.standard.removeObject(forKey: "\(self.userID)" + self.array[indexPath.row]["name"]!)
-            print("刪除按鈕被按下")
-            self.array.remove(at: indexPath.row)
-            print("刪除本地陣列")
-            tableView.deleteRows(at: [indexPath], with: .fade)
-            
-            self.root = Database.database().reference()
-            
-            let delPet = self.root.child("mypet").child("\(self.userID)")
-            
-            if self.array == []{
-                let data = [["birthday": "", "name": "", "kind": ""]]
-                delPet.setValue(data)
-                print("將資料庫資料設為data")
-            }else{
-                delPet.setValue(self.array!)
-            }
-            
-            print("刪除後陣列：\(self.array!)")
+        //準備"刪除"按鈕
+        let actionDelete = UIContextualAction(style: .normal, title: "刪除") { [self] (action, view, completionHanlder) in
+            deletePet(petname: self.petDatas![indexPath.row]["petName"]!)
+            self.petDatas?.remove(at: indexPath.row)
+            self.tableView.reloadData()
         }
         actionDelete.backgroundColor = .systemPink
         //將兩個按鈕合併
@@ -204,16 +115,66 @@ class VaccTVC: UITableViewController {
         return config
     }
     override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath){
-        print("排序前陣列\(self.array!)")
-        self.array!.insert(self.array!.remove(at: fromIndexPath.row), at: to.row)
-        let movePet = self.root.child("mypet").child("\(self.userID)")
-        movePet.setValue(self.array!)
+        //todo:排序
     }
     
-    func stringConvertDate(string:String, dateFormat:String="MMM dd, yyyy") -> Date {
+    //MARK: - func
+    func stringConvertDate(string:String, dateFormat:String="MM/dd/yy") -> Date {
             let dateFormatter = DateFormatter.init()
-            dateFormatter.dateFormat = "MMM dd, yyyy"
+            dateFormatter.dateFormat = "MM/dd/yy"
             let date = dateFormatter.date(from: string)
             return date!
+    }
+    func getPet(){
+        print("使用者帳號\(self.userAccount!)")
+        let session:URLSession = URLSession(configuration: .default)
+        let task = session.dataTask(with: URL(string: String(format: "http://yi-huang.tw/getPet.php?account=%@",self.userAccount!))!){
+            (data,reponse,err)
+            in
+            if let error = err{
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "警告", message: "連線出現問題！\n\(error.localizedDescription)", preferredStyle: .alert)
+                    let button = UIAlertAction(title: "OK", style: UIAlertAction.Style.default) { (button) in }
+                    alert.addAction(button)
+                    self.present(alert, animated: true, completion: {})
+                }
+            }
+            else{
+                do{
+                    self.petDatas = try (JSONSerialization.jsonObject(with: data!, options: .mutableLeaves) as? [[String:String]])
+                    print("使用者寵物\(self.petDatas!)")
+                    
+                        for i in 0..<self.petDatas!.count{
+                            if self.petDatas![i]["petBirth"]?.contains("z") == true{
+                                self.petDatas![i]["petBirth"] = self.petDatas![i]["petBirth"]!.replacingOccurrences(of: "z", with: "/")
+                            }
+                        }
+                }catch{
+                    print("伺服器出錯\(error)")
+                }
+                print("這個使用者的寵物資料在這\(self.petDatas!)")
+            }
+        }
+        task.resume()
+        self.tableView.reloadData()
+    }
+    func deletePet(petname:String){
+        print(petname)
+        let session:URLSession = URLSession(configuration: .default)
+        let task = session.dataTask(with: URL(string: String(format: "http://yi-huang.tw/deletePet.php?account=%@&petName=%@",self.userAccount!,petname).addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)!){
+            (data,reponse,err)
+            in
+            if let error = err{
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "警告", message: "連線出現問題！\n\(error.localizedDescription)", preferredStyle: .alert)
+                    let button = UIAlertAction(title: "OK", style: UIAlertAction.Style.default) { (button) in }
+                    alert.addAction(button)
+                    self.present(alert, animated: true, completion: {})
+                }
+            }
+            else{
+            }
+        }
+        task.resume()
     }
 }

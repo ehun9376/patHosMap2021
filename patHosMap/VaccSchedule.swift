@@ -12,10 +12,11 @@ class VaccSchedule: UIViewController,UITableViewDelegate,UITableViewDataSource {
     @IBOutlet weak var listTable: UITableView!
     var vaccTable = [vaccReminder]()
     var vaccDate:Date?
-    var petName = ""
-    var petKind = "2"  //to do:根據貓/狗給不同的預防針清單
-    let userID = UserDefaults.init().integer(forKey: "userID") - 1
-    
+    var userAccount:String?
+    var petName:String?
+    var petKind:String?
+    var petBirth:String?
+    let userDefault = UserDefaults()
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int
     {
         
@@ -90,23 +91,8 @@ class VaccSchedule: UIViewController,UITableViewDelegate,UITableViewDataSource {
         self.listTable.dataSource = self
         self.listTable.delegate = self
         self.listTable.rowHeight = 70
-    //載入預防針清單
+        self.userAccount = userDefault.string(forKey:"account")
         loadlist()
-        print(userID)
-        print("viewDidLoad")
-        var date = DateComponents()
-        date.second = 10
-        
-        print("date: \(date)")
-        
-        let notificationContent = UNMutableNotificationContent()
-        notificationContent.title = "準備打預防針囉"
-        notificationContent.body = "\(self.petName)準備要打預防針囉"
-        notificationContent.badge = 3
-        notificationContent.sound = UNNotificationSound.default
-        let trigger = UNCalendarNotificationTrigger(dateMatching: date, repeats: true)
-        let request = UNNotificationRequest(identifier: "todoNotification", content: notificationContent, trigger:trigger)
-        UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
     }
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(true)
@@ -120,8 +106,8 @@ class VaccSchedule: UIViewController,UITableViewDelegate,UITableViewDataSource {
         return ["title": Item.title , "date": Item.date, "done": Item.done]
            }
 
-            
-           UserDefaults.standard.set(vaccItemsDic, forKey: "\(userID)" + petName)
+            //todo 加上account
+        UserDefaults.standard.set(vaccItemsDic, forKey: "\(self.userAccount!)" + self.petName!)
         
        }
     
@@ -129,8 +115,10 @@ class VaccSchedule: UIViewController,UITableViewDelegate,UITableViewDataSource {
     {
         
         print(NSHomeDirectory())
-        if let userVaccList = UserDefaults.standard.array(forKey: "\(userID)" + petName) as? [[String:Any]]
+        //todo 加上account
+        if let userVaccList = UserDefaults.standard.array(forKey: "\(self.userAccount!)" + self.petName!) as? [[String:Any]]
         {
+            print("VaccList\(userVaccList)")
             vaccTable = []
             for (index,item) in userVaccList.enumerated()
             {
@@ -144,8 +132,9 @@ class VaccSchedule: UIViewController,UITableViewDelegate,UITableViewDataSource {
         else
         {
             print("進入else段")
-            if petKind == "2"
-            {
+            //todo 加上kind
+            if petKind == "2"{
+                print(vaccDate)
                 vaccTable = [
                 vaccReminder(title: "8週-三合一疫苗", date: vaccDate! + 4838400, done: false),
                 vaccReminder(title: "16週-三合一疫苗", date: vaccDate! + 9676800, done: false),
@@ -156,8 +145,7 @@ class VaccSchedule: UIViewController,UITableViewDelegate,UITableViewDataSource {
                 vaccReminder(title: "3歲-三合一＆狂犬病", date: vaccDate! + 94608000, done: false),
                 ]
             }
-            else if petKind == "1"
-            {
+            else if petKind == "1"{
                 vaccTable = [
                 vaccReminder(title: "6週-六合一疫苗", date: vaccDate! + 3888000, done: false),
                 vaccReminder(title: "10週-第一劑八合一疫苗", date: vaccDate! + 6048000, done: false),

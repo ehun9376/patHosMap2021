@@ -7,12 +7,9 @@ class HospitalViewController: UIViewController,UITableViewDataSource,UITableView
     var locationManager = CLLocationManager()
     var cityHosArray:[[String:String]] = [[:]]
     var hospitalsArray:[[String:String]] = [[:]]
-    var hosNameArray:[String] = []
-    var hosTelArray:[String] = []
-    var hosAddrArray:[String] = []
     //各家經緯度
     var latitude:CLLocationDegrees!
-    var longitude:CLLocationDegrees!
+    var longtude:CLLocationDegrees!
     //紀錄使用者位置
     var userlatitube:CLLocationDegrees!
     var userlongitube:CLLocationDegrees!
@@ -34,23 +31,15 @@ class HospitalViewController: UIViewController,UITableViewDataSource,UITableView
             }
         }
         self.cityHosArray = [[:]]
-        self.hosNameArray = []
-        self.hosTelArray = []
-        self.hosAddrArray = []
         if self.hospitalsArray != [[:]]{
             for hospital in self.hospitalsArray{
-                if hospital["縣市"]! == sender.titleLabel!.text{
+                if hospital["country"]! == sender.titleLabel!.text{
                     self.cityHosArray.append(hospital)
-                    self.hosNameArray.append(hospital["機構名稱"]!)
-                    self.hosTelArray.append(hospital["機構電話"]!)
-                    self.hosAddrArray.append(hospital["機構地址"]!)
                 }
-                self.hospitalsArray[0]["距離"] = "20"
-                 //print("\(self.hospitalsArray[0])")
-                 for i in 0..<self.hospitalsArray.count{
-                    self.hospitalsArray[i]["距離"] = "20"
-                 }
             }
+            self.cityHosArray = self.cityHosArray.filter({ array in
+                array != [:]
+            })
             self.table.dataSource = self
             self.table.delegate = self
             self.table.reloadData()
@@ -66,7 +55,7 @@ class HospitalViewController: UIViewController,UITableViewDataSource,UITableView
     }
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.download()
+        self.download2()
         locationManager.requestWhenInUseAuthorization()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
@@ -75,41 +64,61 @@ class HospitalViewController: UIViewController,UITableViewDataSource,UITableView
     }
     // MARK: - Table view
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return hosNameArray.count
+        return cityHosArray.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell:UITableViewCell = UITableViewCell(style: .value1, reuseIdentifier: "listCell")
-        if indexPath.row <= self.hosNameArray.count{
-            cell.textLabel?.text = hosNameArray[indexPath.row]
+        if indexPath.row <= self.cityHosArray.count{
+            cell.textLabel?.text = self.cityHosArray[indexPath.row]["name"]
             cell.textLabel?.adjustsFontSizeToFitWidth = true
             cell.widthAnchor.constraint(equalToConstant: 711).isActive = true
-            let geocoder = CLGeocoder()
-            geocoder.geocodeAddressString(hosAddrArray[indexPath.row])
-            {
-                (arrPlaceMarks, error)
-                in
-                if let err = error
-                {
-                    print("轉碼錯誤\(err)")
-                }
-                else
-                {
-                    let placemarks = arrPlaceMarks
-                    let location = placemarks?.first?.location!
-                    self.latitude = location!.coordinate.latitude
-                    self.longitude = location!.coordinate.longitude
-                    
-                    //計算距離
-                    let firsLocation = CLLocation(latitude:self.latitude, longitude:self.longitude)
-                    if self.userlatitube != nil && self.longitude != nil{
-                        let secondLocation = CLLocation(latitude: self.userlatitube, longitude: self.userlongitube)
-                        let distance = firsLocation.distance(from: secondLocation) / 1000
-                        cell.detailTextLabel?.text = " \(String(format:"%.01f", distance)) 公里 "
+            if self.cityHosArray[indexPath.row]["latitude"] == "1" {
+                let geocoder = CLGeocoder()
+                geocoder.geocodeAddressString(self.cityHosArray[indexPath.row]["address"]!)
+                { [self]
+                    (arrPlaceMarks, error)
+                    in
+                    if let err = error
+                    {
+                        print("轉碼錯誤\(err)")
                     }
-                    else{
+                    else
+                    {
+                        print("新請求geo")
+                        let placemarks = arrPlaceMarks
+                        let location = placemarks?.first?.location!
                         
+                        self.latitude = location!.coordinate.latitude
+                        self.longtude = location!.coordinate.longitude
+                        self.updateGeo(hosName: self.cityHosArray[indexPath.row]["name"]!,latitude: self.latitude,longtude: self.longtude)
+                        //計算距離
+                        let firsLocation = CLLocation(latitude:self.latitude, longitude:self.longtude)
+                        if self.userlatitube != nil && self.longtude != nil{
+                            let secondLocation = CLLocation(latitude: self.userlatitube, longitude: self.userlongitube)
+                            let distance = firsLocation.distance(from: secondLocation) / 1000
+                            cell.detailTextLabel?.text = " \(String(format:"%.01f", distance)) 公里 "
+                        }
+                        else{
+                            
+                        }
                     }
+                }
+            }
+            else{
+                //有取得到地址編碼
+                print("資料庫有拿到")
+                self.latitude = CLLocationDegrees.init(self.cityHosArray[indexPath.row]["latitude"]!)
+                self.longtude = CLLocationDegrees.init(self.cityHosArray[indexPath.row]["longtude"]!)
+                //計算距離
+                let firsLocation = CLLocation(latitude:self.latitude, longitude:self.longtude)
+                if self.userlatitube != nil && self.longtude != nil{
+                    let secondLocation = CLLocation(latitude: self.userlatitube, longitude: self.userlongitube)
+                    let distance = firsLocation.distance(from: secondLocation) / 1000
+                    cell.detailTextLabel?.text = " \(String(format:"%.01f", distance)) 公里 "
+                }
+                else{
+
                 }
             }
             cell.detailTextLabel?.textColor = UIColor.gray
@@ -125,9 +134,9 @@ class HospitalViewController: UIViewController,UITableViewDataSource,UITableView
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let HosDetailVC = self.storyboard?.instantiateViewController(identifier: "HosDetailVC") as! HosDetailViewController
-        HosDetailVC.strtel = self.hosTelArray[indexPath.row]
-        HosDetailVC.straddr = self.hosAddrArray[indexPath.row]
-        HosDetailVC.strname = self.hosNameArray[indexPath.row]
+        HosDetailVC.strtel = self.cityHosArray[indexPath.row]["number"]!
+        HosDetailVC.straddr = self.cityHosArray[indexPath.row]["address"]!
+        HosDetailVC.strname = self.cityHosArray[indexPath.row]["name"]!
         self.show(HosDetailVC, sender: nil)
         
     }
@@ -139,23 +148,51 @@ class HospitalViewController: UIViewController,UITableViewDataSource,UITableView
          userlongitube = locValue.longitude
      }
     
-    func download() -> Void {
+    func download2() -> Void {
         let session:URLSession = URLSession(configuration: .default)
-        let task:URLSessionDataTask = session.dataTask(with: URL(string:"https://data.coa.gov.tw/Service/OpenData/DataFileService.aspx?UnitId=078&$top=1000&$skip=0")!){
+        let task:URLSessionDataTask = session.dataTask(with: URL(string:"http://127.0.0.1/202108/select.php")!){
             (data,reponse,err)
             in
             if let error = err{
-                let alert = UIAlertController(title: "警告", message: "連線出現問題！\n\(error.localizedDescription)", preferredStyle: .alert)
-                let button = UIAlertAction(title: "OK", style: UIAlertAction.Style.default) { (button) in }
-                alert.addAction(button)
-                self.present(alert, animated: true, completion: {})
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "警告", message: "連線出現問題！\n\(error.localizedDescription)", preferredStyle: .alert)
+                    let button = UIAlertAction(title: "OK", style: UIAlertAction.Style.default) { (button) in }
+                    alert.addAction(button)
+                    self.present(alert, animated: true, completion: {})
+                }
+
             }
             else{
                 do{
                     self.hospitalsArray = try JSONSerialization.jsonObject(with: data!, options: .mutableLeaves) as! [[String:String]]
+                    print(self.hospitalsArray)
                 }catch{
                     print("伺服器出錯\(error)")
                 }
+            }
+        }
+        task.resume()
+    }
+    func updateGeo(hosName:String,latitude:Double,longtude:Double){
+        print(hosName,latitude,longtude)
+        let session = URLSession(configuration: .default)
+        let str = String(format: "http://yi-huang.tw/updateGeo.php?hosName=%@&latitude=%f&longtude=%f", hosName,latitude,longtude).addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+        print(str!)
+        let url = URL(string: str!)!
+        print(url)
+        let task = session.dataTask(with: url)
+        {data,reponse,err in
+            if let error = err{
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "警告", message: "連線出現問題！\n\(error.localizedDescription)", preferredStyle: .alert)
+                    let button = UIAlertAction(title: "OK", style: UIAlertAction.Style.default) { (button) in }
+                    alert.addAction(button)
+                    self.present(alert, animated: true, completion: {})
+                }
+
+            }
+            else{
+                print("新資料\(hosName),\(latitude),\(longtude)上傳成功")
             }
         }
         task.resume()

@@ -1,77 +1,55 @@
-//
-//  AddAnimal.swift
-//  patHosMap
-//
-//  Created by anna on 2020/7/20.
-//  Copyright © 2020 陳逸煌. All rights reserved.
-//
-
 import UIKit
-import Firebase
-import FirebaseStorage
 class AddAnimal: UIViewController,UIImagePickerControllerDelegate,UINavigationControllerDelegate, UIPickerViewDelegate {
-    
     weak var VaccTVC:VaccTVC!
     var currentObjectBottomPosition:CGFloat = 0
-    var root:DatabaseReference!
     var vc:UIImagePickerController!
     var petCount:Int!
-    var userID:Int!
-    var storage:Storage!
+    var userAccount:String?
     var currentObjectBottomYPosition:CGFloat = 0
+    var kind = "0"
+    let userDefault = UserDefaults()
     @IBOutlet weak var txtName: UITextField!
     @IBOutlet weak var txtBirthday: UITextField!
     let Picker = UIDatePicker()
     @IBOutlet weak var imgPicture: UIImageView!
-    
-    var kind = 0
     @IBOutlet weak var btnCat: UIButton!
     @IBOutlet weak var btnDog: UIButton!
+    
     //MARK: - target action
     @IBAction func btndog(_ sender: UIButton) {
         DispatchQueue.main.async {
             sender.imageView?.image = UIImage(named: "fullcircle")
             self.btnCat.imageView?.image = UIImage(named: "circle")
         }
-        kind = 1
+        kind = "1"
     }
     @IBAction func btncat(_ sender: UIButton) {
         DispatchQueue.main.async {
             sender.imageView?.image = UIImage(named: "fullcircle")
             self.btnDog.imageView?.image = UIImage(named: "circle")
         }
-        kind = 2
+        kind = "2"
     }
     @IBAction func btnInsert(_ sender: UIButton) {
-        if txtName.text!.isEmpty || kind == 0 || txtBirthday.text!.isEmpty || imgPicture.image == nil{
+        if txtName.text!.isEmpty || kind == "0" || txtBirthday.text!.isEmpty || imgPicture.image == nil{
             let alert = UIAlertController(title: "資料輸入錯誤", message: "任何一個欄位都不可空白", preferredStyle: .alert)
             let btnOK = UIAlertAction(title: "確定", style: .default, handler: nil)
             alert.addAction(btnOK)
             self.present(alert, animated: true, completion: nil)
             return
         }
+        else{
+            insertPet()
+            DispatchQueue.main.async {
+                let alert = UIAlertController(title: "通知", message: "已新增寵物", preferredStyle: .alert)
+                let button = UIAlertAction(title: "OK", style: UIAlertAction.Style.default) { (button) in
+                    self.navigationController?.popViewController(animated: true)
+                }
+                alert.addAction(button)
+                self.present(alert, animated: true, completion: {})
 
-        let little_data_center:UserDefaults
-        little_data_center = UserDefaults.init()
-        let userID = little_data_center.integer(forKey: "userID") - 1
-        print("增加寵物的使用者\(userID)")
-        let petcount = "\(petCount!)"
-        print("此使用者的第幾隻寵物\(petcount)")
-        let dataAddanimal = root.child("mypet").child("\(userID)").child("\(petcount)")
-        let newData = ["name":"\(self.txtName.text!)","birthday":"\(self.txtBirthday.text!)","kind":"\(self.kind)","picture":"user\(self.userID!)pet\(self.petCount!).jpeg",]
-        dataAddanimal.setValue(newData)
-        //處理上傳
-        let picRef =  storage.reference().child("data/picture/user\(self.userID!)pet\(self.petCount!).jpeg")
-        let jData = self.imgPicture.image!.jpegData(compressionQuality: 0.5)
-        print("圖片資訊\(jData?.description ?? "沒有圖片資訊")")
-        picRef.putData(jData!)
-        //訊息視窗
-        let alert = UIAlertController(title: "通知", message: "已新增寵物", preferredStyle: .alert)
-        let btnOK = UIAlertAction(title: "確定", style: .default) { (ok) in
-            self.navigationController?.popViewController(animated: true)
+            }
         }
-        alert.addAction(btnOK)
-        self.present(alert, animated: true, completion: nil)//顯示訊息視窗
     }
     //MARK: - UIImagePickerControllerDelegate
     @IBAction func btnCamera(_ sender: UIButton) {
@@ -93,7 +71,6 @@ class AddAnimal: UIViewController,UIImagePickerControllerDelegate,UINavigationCo
            imagePicker.sourceType = .photoLibrary
            //允許編輯相片
            imagePicker.allowsEditing = true
-           
            //設定相機相關的代理事件
            imagePicker.delegate = self
            //開啟相簿
@@ -115,11 +92,7 @@ class AddAnimal: UIViewController,UIImagePickerControllerDelegate,UINavigationCo
         txtBirthday.clearButtonMode = .always
         txtBirthday.clearButtonMode = .whileEditing
         creatDatePicker()
-        root = Database.database().reference()
-        storage = Storage.storage()
-        let little_data_center:UserDefaults
-        little_data_center = UserDefaults.init()
-        self.userID = little_data_center.integer(forKey: "userID") - 1
+        self.userAccount = userDefault.string(forKey: "account")
         self.navigationItem.title = "新增寵物"
     }
     //MARK: - keyboard
@@ -135,12 +108,11 @@ class AddAnimal: UIViewController,UIImagePickerControllerDelegate,UINavigationCo
     }
     @objc func donePressed(){
         let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        //formatter.dateFormat = "yyyy.mm.dd"
+        formatter.dateStyle = .short
         formatter.timeStyle = .none
         let dateString = formatter.string(from: Picker.date)
-        
-        txtBirthday.text = "\(dateString)"
+        txtBirthday.text = dateString
+        print("生日格式在這\(dateString)")
         self.view.endEditing(true)
     }
     
@@ -183,8 +155,28 @@ class AddAnimal: UIViewController,UIImagePickerControllerDelegate,UINavigationCo
     }
     @IBAction func didEndOnExit(_ sender: UITextField)
     {
-
     }
-
+    //MARK: - func
+    func insertPet(){
+        print("使用者帳號\(self.userAccount!)")
+        let session:URLSession = URLSession(configuration: .default)
+        let tempBirth = self.txtBirthday.text?.replacingOccurrences(of: "/", with: "z")
+        print("修改過後的字\(tempBirth!)")
+        let task = session.dataTask(with: URL(string: String(format: "http://yi-huang.tw/insertPet.php?account=%@&petName=%@&petKind=%@&petBirth=%@",userAccount!,self.txtName.text!,self.kind,tempBirth!).addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)!){
+            (data,reponse,err)
+            in
+            if let error = err{
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "警告", message: "連線出現問題！\n\(error.localizedDescription)", preferredStyle: .alert)
+                    let button = UIAlertAction(title: "OK", style: UIAlertAction.Style.default) { (button) in }
+                    alert.addAction(button)
+                    self.present(alert, animated: true, completion: {})
+                }
+            }
+            else{
+            }
+        }
+        task.resume()
+    }
 
 }

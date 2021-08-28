@@ -7,33 +7,27 @@
 //
 
 import UIKit
-import Firebase
 import CoreLocation
 import MapKit
 
 class Favorite: UITableViewController, UIActionSheetDelegate {
 
     var hospitalsArray:[[String:String]] = [[:]]
-    var userFavoriteNameArray:[String]!
-    var root:DatabaseReference!
-    var datafavorite:DatabaseReference!
+    var userFavoriteNameArray:[String]! = []
     var userFavoriteName:String!
-    var count = 0
-    var userID = 0
-    var signal = 0
-    var rows = 0
+    let userDefault = UserDefaults()
+    var userAccount:String?
+    var downloadSingle = 0
     fileprivate let application = UIApplication.shared
     
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(true)
-        self.signal = 0
-        self.tableView.reloadData()
+    override func viewWillAppear(_ animated: Bool) {
+        getFavorite()
     }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.download()
-        self.root = Database.database().reference()
+        userAccount = self.userDefault.string(forKey: "account")
+        download()
+        getFavorite()
         self.navigationItem.title = "我的最愛"
         self.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "編輯", style: .plain, target: self, action: #selector(buttonEditAction))
         tableView.rowHeight = 70
@@ -47,45 +41,25 @@ class Favorite: UITableViewController, UIActionSheetDelegate {
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         print("資料載入中")
-        if self.signal != 1{
-            
-            DispatchQueue.main.async {
-                print("進入非信號1")
-                let little_data_center:UserDefaults
-                little_data_center = UserDefaults.init()
-                self.userID = little_data_center.integer(forKey: "userID") - 1
-                print("最愛頁的\(self.userID)")
-                self.root = Database.database().reference()
-                self.datafavorite =  self.root.child("user").child("\(self.userID)").child("favorite")
-                self.root.child("user").child("\(self.userID)").observeSingleEvent(of: .value) { (shot) in
-                    print("最愛頁的\(shot.value!)")
-                    let shotValue = shot.value as? [String:String] ?? [:]
-                    let data = shotValue["favorite"] ?? ""
-                    print(data)
-                    if data != ""{
-                        self.userFavoriteNameArray = data.components(separatedBy: ",")
-                        print(self.userFavoriteNameArray!)
-                        self.signal = 1
-                        self.rows = self.userFavoriteNameArray.count
-                        self.tableView.reloadData()
+        if downloadSingle == 1{
+            if userFavoriteNameArray != [""]{
+                return userFavoriteNameArray.count
+            }
+            else{
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "通知", message: "目前無資料，請先至清單增加", preferredStyle: .alert)
+                    let button = UIAlertAction(title: "OK", style: UIAlertAction.Style.default) { (button) in
+                        self.tabBarController?.selectedIndex = 1
                     }
-                    else{
-                        print("找不到資料")
-                        let alert = UIAlertController(title: "警告", message: "找不到資料，請先至清單頁新增醫院", preferredStyle: .alert)
-                        let button = UIAlertAction(title: "OK", style: UIAlertAction.Style.default) { (button) in
-                        }
-                        alert.addAction(button)
-                        self.present(alert, animated: true, completion: {})
-                    }
+                    alert.addAction(button)
+                    self.present(alert, animated: true, completion: {})
                 }
+                return 0
             }
         }
         else{
-            self.rows = self.userFavoriteNameArray.count
+            return 0
         }
-        print(self.signal)
-        
-        return self.rows
     }
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell{
         let cell:UITableViewCell = UITableViewCell()
@@ -108,9 +82,9 @@ class Favorite: UITableViewController, UIActionSheetDelegate {
         //比對大資料
         for hospital in self.hospitalsArray
         {
-            if hospital["機構名稱"]! == userFavoriteNameArray[indexPath.row]
+            if hospital["name"]! == userFavoriteNameArray[indexPath.row]
             {
-                //print(hospital["機構地址"]!)
+                print(hospital["address"]!)
                 //初始化地理資訊編碼器
                 let alert: UIAlertController = UIAlertController(title: "", message: "請選擇", preferredStyle: .actionSheet)
                 
@@ -122,7 +96,7 @@ class Favorite: UITableViewController, UIActionSheetDelegate {
                 let saveActionButton = UIAlertAction(title: "電話", style: .default)
                     { _ in
                        print("打電話")
-                        let phoneNumber = hospital["機構電話"]!
+                        let phoneNumber = hospital["number"]!
                         if let phoneURL = URL(string: "tel://\(phoneNumber)")
                         {
                             if self.application.canOpenURL(phoneURL)
@@ -140,7 +114,7 @@ class Favorite: UITableViewController, UIActionSheetDelegate {
                 let deleteActionButton = UIAlertAction(title: "地圖", style: .default)
                     { _ in
                         let geoCoder = CLGeocoder()
-                       geoCoder.geocodeAddressString(hospital["機構地址"]!) { (arrPlacemark, error)
+                       geoCoder.geocodeAddressString(hospital["address"]!) { (arrPlacemark, error)
                            in
                            if error != nil
                            {
@@ -177,47 +151,95 @@ class Favorite: UITableViewController, UIActionSheetDelegate {
     
     // MARK: - Table view Delegate
     override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath){
+        //修改排序
         self.userFavoriteNameArray!.insert(self.userFavoriteNameArray!.remove(at: fromIndexPath.row), at: to.row)
-        self.datafavorite =  self.root.child("user").child("\(self.userID)").child("favorite")
-        self.datafavorite.setValue(self.userFavoriteNameArray!.joined(separator: ","))
+        print(self.userFavoriteNameArray!)
+        updateFavorite()
     }
 
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath){
         print("進入刪除")
         self.userFavoriteNameArray!.remove(at: indexPath.row)
-        print("刪除本地陣列")
-        
-        self.datafavorite =  self.root.child("user").child("\(self.userID)").child("favorite")
-        self.datafavorite.setValue(self.userFavoriteNameArray!.joined(separator: ","))
-        print("修改資料酷")
-        
         tableView.deleteRows(at: [indexPath], with: .fade)
+        updateFavorite()
         print("刪除tableROW")
-        
-        
-
     }
     
     // MARK: - 自訂函式
-    func download() -> Void {
+    func download(){
+        print("下載大資料")
         let session:URLSession = URLSession(configuration: .default)
-        let task:URLSessionDataTask = session.dataTask(with: URL(string:"https://data.coa.gov.tw/Service/OpenData/DataFileService.aspx?UnitId=078&$top=1000&$skip=0")!){
+        let task:URLSessionDataTask = session.dataTask(with: URL(string:"http://yi-huang.tw/select.php")!){
             (data,reponse,err)
             in
             if let error = err{
-                let alert = UIAlertController(title: "警告", message: "連線出現問題！\n\(error.localizedDescription)", preferredStyle: .alert)
-                let button = UIAlertAction(title: "OK", style: UIAlertAction.Style.default) { (button) in
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "警告", message: "連線出現問題！\n\(error.localizedDescription)", preferredStyle: .alert)
+                    let button = UIAlertAction(title: "OK", style: UIAlertAction.Style.default) { (button) in }
+                    alert.addAction(button)
+                    self.present(alert, animated: true, completion: {})
                 }
-                alert.addAction(button)
-                self.present(alert, animated: true, completion: {})
+
             }
             else{
                 do{
                     self.hospitalsArray = try JSONSerialization.jsonObject(with: data!, options: .mutableLeaves) as! [[String:String]]
-                    
+//                    print(self.hospitalsArray)
                 }catch{
                     print("伺服器出錯\(error)")
                 }
+            }
+        }
+        task.resume()
+    }
+    func getFavorite() -> Void {
+        print(self.userAccount!)
+        let session:URLSession = URLSession(configuration: .default)
+        let task = session.dataTask(with: URL(string: String(format: "http://yi-huang.tw/getFavorite.php?account=%@",userAccount!))!){ [self]
+            (data,reponse,err)
+            in
+            if let error = err{
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "警告", message: "連線出現問題！\n\(error.localizedDescription)", preferredStyle: .alert)
+                    let button = UIAlertAction(title: "OK", style: UIAlertAction.Style.default) { (button) in }
+                    alert.addAction(button)
+                    self.present(alert, animated: true, completion: {})
+                }
+            }
+            else{
+                self.userFavoriteName = String(data: data!, encoding:.utf8)!
+                self.userFavoriteName = self.userFavoriteName?.filter({ Character in
+                    Character != " "
+                })
+                print("使用者最愛在這位處理\(self.userFavoriteName!)")
+                self.userFavoriteNameArray = self.userFavoriteName.components(separatedBy: ",")
+                print("使用者最愛陣列\(self.userFavoriteNameArray!)")
+                DispatchQueue.main.async {
+                    self.downloadSingle = 1
+                    self.tableView.reloadData()
+                }
+                
+            }
+        }
+        task.resume()
+    }
+    func updateFavorite(){
+        print("使用者帳號\(self.userAccount!)")
+        let tempData:String? = self.userFavoriteNameArray?.joined(separator: ",")
+        let session:URLSession = URLSession(configuration: .default)
+        let task = session.dataTask(with: URL(string: String(format: "http://yi-huang.tw/updateFavorite.php?account=%@&favorite=%@",userAccount!,tempData!).addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)!){ [self]
+            (data,reponse,err)
+            in
+            if let error = err{
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "警告", message: "連線出現問題！\n\(error.localizedDescription)", preferredStyle: .alert)
+                    let button = UIAlertAction(title: "OK", style: UIAlertAction.Style.default) { (button) in }
+                    alert.addAction(button)
+                    self.present(alert, animated: true, completion: {})
+                }
+            }
+            else{
+                print("最愛已更動\(self.userFavoriteNameArray!)")
             }
         }
         task.resume()
